@@ -1,0 +1,110 @@
+https://zh-hans.single-spa.js.org/docs/create-single-spa
+https://iter01.com/659505.html
+
+1.npm install --global create-single-spa
+2.create single spa project: root config webapp
+    1) create-single-spa single-spa-project
+    =>  ? Select type to generate single-spa root config
+        ? Which package manager do you want to use? npm
+        ? Will this project use Typescript? Yes
+        ? Would you like to use single-spa Layout Engine No
+        ? Organization name (can use letters, numbers, dash or underscore) myyhhuang
+    2) cd single-spa-project
+    3) npm run start
+    4) browser => http://127.0.0.1:9000/
+3.create single spa project: single-spa-vue
+    1) create-single-spa single-spa-vue
+    =>  ? Select type to generate single-spa application / parcel
+        ? Which framework do you want to use? vue
+        ? Organization name (can use letters, numbers, dash or underscore) myyhhuang
+            Need to install the following packages:
+            @vue/cli
+            Ok to proceed? (y) y
+            ...
+        Vue CLI v5.0.4
+        ? Please pick a preset: Default ([Vue 3] babel, eslint)
+        ? Pickthe package manager to use when installing dependencies: NPM
+    2) cd single-spa-vue
+    3) npm run serve
+    4) browser => http://127.0.0.1:8080/
+       => Your Microfrontend is not here => fail
+    5) npm run serve:standalone
+    6) browser => http://127.0.0.1:8080/
+
+4.create single spa project: single-spa-react
+    1) create-single-spa single-spa-react
+    =>  ? Select type to generate single-spa application / parcel
+        ? Which framework do you want to use? react
+        ? Which package manager do you want to use? npm
+        ? Will this project use Typescript? Yes
+        ? Organization name (can use letters, numbers, dash or underscore) myyhhuang
+        ? Project name (can use letters, numbers, dash or underscore) single-spa-react
+        ...
+        Project setup complete!
+        Steps to test your React single-spa application:
+        1. Run 'npm start -- --port 8500'
+        2. Go to http://single-spa-playground.org/playground/instant-test?name=@myyhhuang/single-spa-react&url=8500 to see it working! 
+    2) cd single-spa-react
+    3) npm start -- --port 8500
+    4) browser => http://single-spa-playground.org/playground/instant-test?name=@myyhhuang/single-spa-react&url=8500
+
+5.add single-spa-vue
+    1) single-spa-project/src/index.ejs
+        "imports": {
+            "@myyhhuang/root-config": "//127.0.0.1:9000/myyhhuang-root-config.js",
+            "@myyhhuang/single-spa-vue": "//127.0.0.1:9001/js/app.js"
+        }
+    2) single-spa-project/src/myyhhuang-root-config.js
+        registerApplication({
+            name: "@myyhhuang/single-spa-vue",
+            app: () => System.import('@myyhhuang/single-spa-vue'),
+            activeWhen: ["/vue"],
+        });
+    3) https://stackoverflow.com/questions/71271760/parsing-error-no-babel-config-file-detected-when-ide-not-open-at-vue-projects
+        "eslint.workingDirectories": [
+            {"mode": "auto"}
+        ],
+    4) https://stackoverflow.com/questions/71486686/cannot-read-properties-of-undefined-reading-meta-in-vue-3-single-spa-app
+        vue.config.js:
+            module.exports = {
+            // various other settings such as publicPath, etc
+            // ...
+            configureWebpack: {
+                output: {
+                libraryTarget: 'system',
+                },
+            },
+            }
+    5) vue.config.js
+        devServer: {
+            port: 9001
+        },
+    6) npm run start
+    7) Browser => http://127.0.0.1:9000/vue
+
+6.add single-spa-react
+    1) single-spa-project/src/index.ejs
+        "imports": {
+            "@myyhhuang/root-config": "//127.0.0.1:9000/myyhhuang-root-config.js",
+            "@myyhhuang/single-spa-vue": "//127.0.0.1:9001/js/app.js",
+            "@myyhhuang/single-spa-react": "//127.0.0.1:9002/myyhhuang-single-spa-react.js"
+        }
+    2) single-spa-project/src/myyhhuang-root-config.js
+        registerApplication({
+            name: "@myyhhuang/single-spa-react",
+            app: () => System.import('@myyhhuang/single-spa-react'),
+            activeWhen: ["/react"],
+        });
+    3) src/index.ejs
+        <script type="systemjs-importmap">
+            {
+            "imports": {
+                "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@5.9.0/lib/system/single-spa.min.js",
+                "react": "https://cdn.jsdelivr.net/npm/react@16.13.1/umd/react.production.min.js",
+                "react-dom": "https://cdn.jsdelivr.net/npm/react-dom@16.13.1/umd/react-dom.production.min.js"
+            }
+            }
+        </script>
+    5) package.json
+        "start": "webpack serve --port 9002",
+    6) Browser => http://127.0.0.1:9000/react
